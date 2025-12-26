@@ -41,7 +41,7 @@ class MyClient(discord.Client):
          if message.content.startswith('/create'):
             try:
                 response = re.match(r'')
-            await message.channel.send("<:daquan:1379633390260850718>")
+            
             return   
 
 
