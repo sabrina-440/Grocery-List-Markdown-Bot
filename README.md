@@ -1,4 +1,4 @@
-Grocery / Shopping /TODO List with Makrdown(.md) Obsidian Storage/Parser Integration
+Grocery / Shopping / TODO List with Makrdown(.md) Obsidian Storage/Parser Integration
 
 add, create and view lists from the bot or in markdown editor of choice (obsidian used for examples)
 <img width="691" height="547" alt="image" src="https://github.com/user-attachments/assets/be176498-f2f2-44b7-848e-a9b0f41b3abe" />
