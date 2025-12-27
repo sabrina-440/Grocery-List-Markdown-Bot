@@ -29,22 +29,24 @@ import re
 with open('config.json') as config_file:
     config = json.load(config_file)
 
-TOKEN = "YMTQ1Mzg0NTQzMDA0NjU2MDQyOQ.GAcA9W.vco7OklQuPhVzIWTezj5YUB6rpYDImRhQHpLcc"
-#config['token']
+TOKEN = config['token']
 
 #TODO: use markdown (.md) files for storage instead for Obsidian integration
 lists = []
 content = {}
 
 intents = discord.Intents.default()
+intents.presences = True
 intents.messages = True
-intents.message_content = True
 intents.guilds = True
+intents.members = True
+intents.message_content = True
 activity = discord.Game(name="~keeper of the lists~")
 client = commands.Bot(command_prefix='/', intents=intents)
 
-async def on_ready(self):
-    print(f'Logged on as {self.user}')
+@client.event
+async def on_ready():
+    print(f'Logged on as {client.user}')
     try:
         # Sync the command tree
         synced = await client.tree.sync()
@@ -53,10 +55,11 @@ async def on_ready(self):
         print(e)
 
 # Define a slash command with input fields
-@client.tree.command(name="greet", description="Greets a user with a custom message")
-@app_commands.describe(user_name="The name of the user to greet", message="A custom message to include")
-async def greet(interaction: discord.Interaction, user_name: str, message: str):
-    await interaction.response.send_message(f"Hello, {user_name}! Bot says: '{message}'")
+@client.tree.command(name="create", description="create a new list")
+@app_commands.describe(list_name="The name of the list to add", items="comma seperated items to add to current list")
+async def greet(interaction: discord.Interaction, list_name: str, items: str):
+    await interaction.response.send_message(f"List Created, {list_name}: '\n{items}'") 
+    #TODO: make items list like - item1\n - item2\n etc...)
 
 
 
