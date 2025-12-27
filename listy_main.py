@@ -16,9 +16,11 @@ prints out list after modification is done
 
 /show (or /ls) show all current lists
 '''
-
+#TODO: change name from list to shopping-list
 
 import discord
+from discord import app_commands
+from discord.ext import commands
 import json
 import asyncio
 import re
@@ -27,34 +29,37 @@ import re
 with open('config.json') as config_file:
     config = json.load(config_file)
 
-TOKEN = config['token']
+TOKEN = "YMTQ1Mzg0NTQzMDA0NjU2MDQyOQ.GAcA9W.vco7OklQuPhVzIWTezj5YUB6rpYDImRhQHpLcc"
+#config['token']
 
-class MyClient(discord.Client):
-    def __init__(self, *args, **kwargs):
-        self.lists = []
-        self.content = {}
-
-    async def on_ready(self):
-        print(f'Logged on as {self.user}')
-    
-    async def on_message(self, message):
-         if message.content.startswith('/create'):
-            try:
-                response = re.match(r'')
-            
-            return   
-
-
+#TODO: use markdown (.md) files for storage instead for Obsidian integration
+lists = []
+content = {}
 
 intents = discord.Intents.default()
-intents.presences = True
 intents.messages = True
-intents.guilds = True
-intents.members = True
 intents.message_content = True
-
+intents.guilds = True
 activity = discord.Game(name="~keeper of the lists~")
-client = MyClient(intents=intents, activity=activity)
+client = commands.Bot(command_prefix='/', intents=intents)
+
+async def on_ready(self):
+    print(f'Logged on as {self.user}')
+    try:
+        # Sync the command tree
+        synced = await client.tree.sync()
+        print(f"Synced {len(synced)} command(s)")
+    except Exception as e:
+        print(e)
+
+# Define a slash command with input fields
+@client.tree.command(name="greet", description="Greets a user with a custom message")
+@app_commands.describe(user_name="The name of the user to greet", message="A custom message to include")
+async def greet(interaction: discord.Interaction, user_name: str, message: str):
+    await interaction.response.send_message(f"Hello, {user_name}! Bot says: '{message}'")
+
+
+
 
 client.run(TOKEN)
 
