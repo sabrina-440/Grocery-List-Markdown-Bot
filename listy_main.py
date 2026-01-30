@@ -1,6 +1,9 @@
+import os
+import datetime
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
+import pytz
 import json
 import shlex
 from pathlib import Path
@@ -54,7 +57,7 @@ with open("config.json") as f:
 
 DATA_DIR = Path("lists")
 DATA_DIR.mkdir(exist_ok=True)
-
+LAST_LOCAL_EDIT = -1
 # ─────────────────────────────────────────────────────────────
 # Markdown storage helpers
 # ─────────────────────────────────────────────────────────────
@@ -89,6 +92,7 @@ def save_lists(channel_id: int, lists: dict[str, list[str]]):
         lines.append("")
 
     path.write_text("\n".join(lines).rstrip() + "\n")
+    LAST_LOCAL_EDIT = datetime.now()
 
 # ─────────────────────────────────────────────────────────────
 # Utility helpers
@@ -120,11 +124,33 @@ def format_list(name: str, items: list[str]) -> str:
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="/", intents=intents)
+channelid = 1453833355886858402
+#TODO: make this not hardcoded
+
+# Print out list every day only if users made remote edits from obsidian
+#oops this is hardcoded, bad practices..
+
+
+@tasks.loop(time=datetime.time(hour=1, minute=30, tzinfo=pytz.UTC))
+async def daily_msg():
+    print('daily')
+    channel = bot.get_channel(channelid)
+    lists = load_lists(channelid)
+    filepath = "lists/channel_"+str(channelid)+".md"
+    if(lists):
+        response = ""
+        curr_edit =os.path.getmtime(filepath)
+        if(LAST_LOCAL_EDIT<curr_edit):
+            for l in lists:
+                response+= format_list(l, lists[l]) +'\n'
+            await channel.send(response)
 
 @bot.event
 async def on_ready():
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
+    if not daily_msg.is_running():
+        daily_msg.start()
 
 
 # ─────────────────────────────────────────────────────────────
