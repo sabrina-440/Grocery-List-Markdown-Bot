@@ -92,7 +92,8 @@ def save_lists(channel_id: int, lists: dict[str, list[str]]):
         lines.append("")
 
     path.write_text("\n".join(lines).rstrip() + "\n")
-    LAST_LOCAL_EDIT = datetime.now()
+    #LAST_LOCAL_EDIT = datetime.now()
+
 
 # ─────────────────────────────────────────────────────────────
 # Utility helpers
@@ -131,7 +132,7 @@ channelid = 1453833355886858402
 #oops this is hardcoded, bad practices..
 
 
-@tasks.loop(time=datetime.time(hour=1, minute=30, tzinfo=pytz.UTC))
+@tasks.loop(time=datetime.time(hour=19, minute=30, tzinfo=pytz.UTC))
 async def daily_msg():
     print('daily')
     channel = bot.get_channel(channelid)
@@ -150,7 +151,7 @@ async def on_ready():
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
     if not daily_msg.is_running():
-        daily_msg.start()
+       daily_msg.start()
 
 
 # ─────────────────────────────────────────────────────────────
