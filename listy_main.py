@@ -150,8 +150,6 @@ async def daily_msg():
 async def on_ready():
     await bot.tree.sync()
     print(f"Logged in as {bot.user}")
-    if not daily_msg.is_running():
-       daily_msg.start()
 
 
 # ─────────────────────────────────────────────────────────────
