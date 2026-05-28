@@ -5,7 +5,6 @@ from discord import app_commands
 from discord.ext import commands, tasks
 import pytz
 import json
-import shlex
 from pathlib import Path
 
 '''
@@ -14,7 +13,7 @@ from pathlib import Path
 /add add item to already existing list, can specifify list. 
 if not specified it will look for other lists in thread/channel. 
 if no lists in thread then report error, if multiple ask to specify
-can add multiple items seperated by space or use quotes if items have spaces
+can add multiple items separated by commas
 prints out list after modification is done
 
 
@@ -30,7 +29,7 @@ prints out list after modification is done
 '''
 
 cmds_info = '''
-NOTE spaces between items, use quotes "two words" to specify multi word items!!
+NOTE separate items with commas, e.g. `eggs, almond milk, bread`
 
 /create make a new list (can add items)
 
@@ -119,6 +118,9 @@ def format_list(name: str, items: list[str]) -> str:
         return f"### {name}\n*(empty)*"
     return "### " + name + "\n" + "\n".join(f"- {i}" for i in items)
 
+def parse_items(items: str) -> list[str]:
+    return [i.strip() for i in items.split(",") if i.strip()]
+
 # ─────────────────────────────────────────────────────────────
 # Bot setup
 # ─────────────────────────────────────────────────────────────
@@ -163,7 +165,7 @@ async def help_command(interaction: discord.Interaction):
 # /create
 # ─────────────────────────────────────────────────────────────
 @bot.tree.command(name="create", description="Create a new list")
-@app_commands.describe(name="List name", items="Items (use quotes for spaces)")
+@app_commands.describe(name="List name", items="Items separated by commas")
 async def create(interaction: discord.Interaction, name: str, items: str | None = None):
     lists = load_lists(interaction.channel_id)
 
@@ -171,7 +173,7 @@ async def create(interaction: discord.Interaction, name: str, items: str | None 
         await interaction.response.send_message("❌ List already exists.", ephemeral=True)
         return
 
-    lists[name] = shlex.split(items) if items else []
+    lists[name] = parse_items(items) if items else []
     save_lists(interaction.channel_id, lists)
 
     await interaction.response.send_message(
@@ -182,14 +184,14 @@ async def create(interaction: discord.Interaction, name: str, items: str | None 
 # /add
 # ─────────────────────────────────────────────────────────────
 @bot.tree.command(name="add", description="Add items to a list")
-@app_commands.describe(items="Items to add", list_name="Optional list name")
+@app_commands.describe(items="Items separated by commas", list_name="Optional list name")
 async def add(interaction: discord.Interaction, items: str, list_name: str | None = None):
     name, lists, error = resolve_list(interaction.channel_id, list_name)
     if error:
         await interaction.response.send_message(error, ephemeral=True)
         return
 
-    lists[name].extend(shlex.split(items))
+    lists[name].extend(parse_items(items))
     save_lists(interaction.channel_id, lists)
 
     await interaction.response.send_message(
@@ -205,7 +207,7 @@ async def remove_impl(interaction, items, list_name):
         await interaction.response.send_message(error, ephemeral=True)
         return
 
-    for item in shlex.split(items):
+    for item in parse_items(items):
         if item in lists[name]:
             lists[name].remove(item)
 
